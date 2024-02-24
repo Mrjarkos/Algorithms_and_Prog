@@ -107,7 +107,7 @@ class MainWindow(tk.Frame):
             messagebox.showerror("Tipo Error", f"El usuario con codigo {cod} ya es un {usr_typ.__name__}")
             return 
         
-        new_rol = usr_typ(tomasino=user, *params)
+        new_rol = usr_typ(user, *params)
         
         self.Users.append(new_rol)
         self.view_users = self.Users

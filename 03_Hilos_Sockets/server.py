@@ -6,7 +6,7 @@ from constants import HOST, PORT, ENCODING
 
 class Client():
     
-    def __init__(self, conn: socket, addr, nick:str, id:int):
+    def __init__(self, conn: socket.socket, addr, nick:str, id:int):
         self.conn = conn
         self.addr = addr
         self.nick = nick
@@ -55,7 +55,7 @@ def logging(client: Client):
     }
     notify_all(info_dict)
 
-def accept_client(s : socket):
+def accept_client(s : socket.socket):
     id = 0
     global clients
     ## Wait for client to connect

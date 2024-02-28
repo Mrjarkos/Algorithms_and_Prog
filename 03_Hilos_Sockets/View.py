@@ -1,3 +1,4 @@
+from functools import partial
 import textwrap
 import tkinter as tk
 from tkinter import messagebox
@@ -117,7 +118,7 @@ class ScrollbarText(tk.Text):
 
 class MainWindow(tk.Tk):
     
-    def __init__(self, usr_name, id, command=None):
+    def __init__(self, usr_name, id, command:partial):
         super().__init__()
         self.title(f"Chat de {usr_name}")
         self.geometry("700x500")
@@ -129,7 +130,7 @@ class MainWindow(tk.Tk):
         self.build()
         self.Frame.grid(sticky="nswe", padx=10, pady=10)
     
-    def send(self, data):
+    def send(self, data: dict):
         ## The information is implicit on the connection
         # info_dict = {
         #     "id" : self.id,

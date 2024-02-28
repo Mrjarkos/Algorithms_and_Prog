@@ -5,7 +5,7 @@ from functools import partial
 from constants import HOST, PORT, ENCODING
 from View import AskName, MainWindow
 
-def send_message(conn: socket, data: str):
+def send_message(conn: socket.socket, data: str):
     try:
         conn.send(data.encode(ENCODING))
     except OSError as e:
@@ -21,7 +21,7 @@ def parse_data(data):
     data = line["data"]
     return (time, name, id, data)
 
-def listen_server(conn : socket, show_fct):
+def listen_server(conn : socket.socket, show_fct):
     print("Thread-1: Client listening")
     while conn:
         try:

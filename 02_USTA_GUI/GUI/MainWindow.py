@@ -27,7 +27,7 @@ class MainWindow(tk.Frame):
         
         self.view_users = self.Users
         
-        super().__init__(parent, *args, kwargs)
+        super().__init__(parent, *args, **kwargs)
         self.build()
         self.grid(sticky="nswe", padx=10, pady=10)
     

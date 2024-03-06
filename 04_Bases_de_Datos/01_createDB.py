@@ -9,7 +9,7 @@ import psycopg2
 USER="postgres"
 PASSWORD = "0077"
 
-# Conectarse al servidor de "PostgreSQL 16" / database default
+#Conectarse al servidor de "PostgreSQL 16" / database default
 conn = psycopg2.connect(
     host="localhost",
     database="postgres",
@@ -66,6 +66,14 @@ cur.execute("""
     CREATE TABLE materias (
         id SERIAL PRIMARY KEY,
         nombre VARCHAR(255),
+        facultad VARCHAR(255)
+    );
+""")
+
+cur.execute("""
+    CREATE TABLE materias_estudiantes (
+        id SERIAL PRIMARY KEY,
+        materia_id  INTEGER REFERENCES materias(id),
         estudiante_id INTEGER REFERENCES estudiantes(id),
         docente_id INTEGER REFERENCES docentes(id)
     );

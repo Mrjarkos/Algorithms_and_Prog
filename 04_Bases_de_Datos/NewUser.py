@@ -1,3 +1,4 @@
+from re import sub
 import tkinter as tk
 from tkinter import messagebox
 from DBManager import DBManager
@@ -11,9 +12,6 @@ class FrameProfessor(tk.Frame):
 
     def __init__(self, master, *args, **kwargs):
         self.especialidad = tk.StringVar()
-        self.subject_filter = tk.StringVar()
-        self.subject_list = tk.Variable(value=())
-        self._subjects = []
         super().__init__(master, *args, **kwargs)
         self.frame = tk.Frame(master)
         self.build()
@@ -21,34 +19,17 @@ class FrameProfessor(tk.Frame):
     def build(self):
         self.especialidad_lbl = tk.Label(self.frame, text="Especialidad:")
         self.especialidad_entry = tk.Entry(self.frame, textvariable=self.especialidad)
-        
-        self.subject_lbl = tk.Label(self.frame, text="Añadir materia:")
-        #self.subject_combobox = tk.OptionMenu(self.frame, self.subject_filter)#, *SUBJECTS, command=self.add_subject)
-        self.subject_lbl_list = tk.Listbox(self.frame)
-        
         self.especialidad_lbl.grid(column=0, row=0, sticky="nw")
         self.especialidad_entry.grid(column=1, row=0, sticky="nw")
-        self.subject_lbl.grid(column=0, row=1, sticky="nw")
-        #self.subject_combobox.grid(column=1, row=1, sticky="nw")
-        self.subject_lbl_list.grid(column=0, columnspan=1, row=2, sticky="nw")
         self.frame.grid()
-        
-    def add_subject(self, selection):
-        current_selection = self.subject_filter.get()
-        if current_selection not in self._subjects:
-            self.subject_lbl_list.insert(0, current_selection)
-            self._subjects.append(current_selection)
 
 class FrameStudent(tk.Frame):
 
     def __init__(self, master, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.frame = tk.Frame(self)
-        self.subject_filter = tk.StringVar()
         self.semester = tk.IntVar()
         self.carrera = tk.StringVar()
-        self.subject_list_str = tk.StringVar()
-        self._subjects = []
         self.build()
         
     def build(self):
@@ -57,24 +38,12 @@ class FrameStudent(tk.Frame):
         self.semester_entry = tk.Entry(self.frame, textvariable=self.semester)
         self.carrera_lbl = tk.Label(self.frame, text="Carrera:")
         self.carrera_entry = tk.Entry(self.frame, textvariable=self.carrera)
-        self.subject_lbl = tk.Label(self.frame, text="Añadir materias:")
-        #self.subject_combobox = tk.OptionMenu(self.frame, self.subject_filter, *SUBJECTS, command=self.add_subject)
-        self.subject_lbl_list = tk.Listbox(self.frame)
         
         self.semester_lbl.grid(column=0, row=0, sticky="nw")
         self.semester_entry.grid(column=1, row=0, sticky="nw")
         self.carrera_lbl.grid(column=0, row=1, sticky="nw")
         self.carrera_entry.grid(column=1, row=1, sticky="nw")
-        self.subject_lbl.grid(column=0, row=2, sticky="nw")
-        #self.subject_combobox.grid(column=1, row=2, sticky="nw")
-        self.subject_lbl_list.grid(column=0, columnspan=1, row=2, sticky="nw")
         self.frame.grid()
-        
-    def add_subject(self, selection):
-        current_selection = self.subject_filter.get()
-        if current_selection not in self._subjects:
-            self.subject_lbl_list.insert(0, current_selection)
-            self._subjects.append(current_selection)
 
 class NewUser():
     
@@ -89,6 +58,10 @@ class NewUser():
         self.facultad = tk.StringVar()
         self.rol_filter = tk.StringVar()
         self.rol_filter.set("estudiante")
+        self.subject_filter = tk.StringVar()
+        self.subject_filter.set("")
+        self._subjects = []
+        self.subject_list = tk.Variable(value=())
         self.result = False 
         self.new = True
         self.build()
@@ -108,11 +81,17 @@ class NewUser():
         self.edad_lbl = tk.Label(self.frame, text="Edad:")
         self.edad_entry = tk.Entry(self.frame, textvariable=self.edad)
         self.facultad_lbl = tk.Label(self.frame, text="Facultad:")
-        self.facultad_entry = tk.Entry(self.frame, textvariable=self.facultad)
+        facultades = set([str(f[0]) for f in self.db.get_materias(properties=["facultad"])])
+        self.facultad_entry = tk.OptionMenu(self.frame, self.facultad, *facultades, command=self.load_materias)
         self.rol_lbl = tk.Label(self.frame, text="Tipo de Usuario")
         self.rol_combobox = tk.OptionMenu(self.frame, self.rol_filter, *list(ROLES.keys()), command=self.display_rol_frame)
         self.rol_frame = tk.Frame(self.frame)
-        self.create_btn = tk.Button(self.frame, text="Crear Usuario", command=self.validate_data)
+        
+        self.subject_lbl = tk.Label(self.frame, text="Añadir materia:")
+        self.subject_combobox = tk.OptionMenu(self.frame, self.subject_filter, *[""])
+        self.subject_lbl_list = tk.Listbox(self.frame, width=40)
+         
+        self.create_btn = tk.Button(self.frame, text="Crear Usuario", command=self.validate_data)  
         
         self.first_name_lbl.grid(row=0, column=0, sticky="nw")
         self.first_name_entry.grid(row=0, column=1, sticky="nw")
@@ -123,13 +102,18 @@ class NewUser():
         self.facultad_lbl.grid(row=3, column=0, sticky="nw")
         self.facultad_entry.grid(row=3, column=1, sticky="nw")
         
+        self.subject_lbl.grid(column=0, row=8, sticky="nw")
+        self.subject_combobox.grid(column=1, row=8, sticky="nw")
+        self.subject_lbl_list.grid(column=0, columnspan=2, row=9, sticky="nw")
+        
         self.rol_lbl.grid(row=5, column=0, sticky="nw")
         self.rol_combobox.grid(row=5, column=1, sticky="nw")
 
-        self.create_btn.grid(row=10, column=3, sticky="nw")
+        self.create_btn.grid(row=11, column=3, sticky="nw")
         self.frame.grid(padx=10, pady=10, sticky="nswe")
         
         self.display_rol_frame(None)
+        self.subject_lbl_list.bind("<Double-1>", self.remove_selected_item)
     
     def display_rol_frame(self, selection):
         self.rol_frame.destroy()
@@ -138,7 +122,7 @@ class NewUser():
         if self.rol_filter.get() is not None:
             self.rol_frame_child = ROLES[self.rol_filter.get()](self.rol_frame)
             self.rol_frame_child.grid()
-            self.rol_frame.grid(row=6, column=0, columnspan=3, rowspan=4, sticky="nswe")
+            self.rol_frame.grid(row=6, column=0, columnspan=3, rowspan=2, sticky="nswe")
     
     def validate_data(self):
         if any([
@@ -168,9 +152,31 @@ class NewUser():
         self.toplevel.wait_window()  # Wait until the dialog is closed
         return self.result
     
-    def load_data(self, user):
+    def load_materias(self, event):
+        # When changing Faculty, you have to start again from the beginning 
+        self._subjects = []
+        self.subject_lbl_list.delete(0, tk.END)
         
-        
+        facultad = self.facultad.get()
+        materias =  list([str(f[0]) for f in self.db.get_materias(properties=["nombre"], filter={"facultad": facultad})])
+        self.subject_combobox["menu"].delete(0, "end")
+
+        for materia in materias:
+            self.subject_combobox["menu"].add_command(label=materia, command=lambda m=materia: self.add_subject(m))
+           
+    def add_subject(self, subject):
+        self.subject_filter.set(subject)
+        if subject not in self._subjects:
+            self.subject_lbl_list.insert(0, subject)
+            self._subjects.append(subject)
+  
+    def remove_selected_item(self, event):
+        selected_index = self.subject_lbl_list.curselection()
+        if selected_index:
+            self.subject_lbl_list.delete(selected_index)
+            self._subjects.pop(selected_index[0])
+    
+    def load_data(self, user):       
         rol = user[-1]
         
         self.first_name.set(user[1])
@@ -181,16 +187,21 @@ class NewUser():
         if rol == "estudiante":
             usr = self.db.get_estudiantes(properties = ["facultad", "carrera", "semestre"],
                                           filter={"identificacion": user[0]})[0]
-            print(f"estudiante={usr}")
             self.rol_frame_child.semester.set(usr[2])
             self.rol_frame_child.carrera.set(usr[1])
             self.facultad.set(usr[0])
         elif rol == "profesor":
             usr = self.db.get_profesores(properties = ["facultad", "especialidad"],
                                          filter={"identificacion": user[0]})[0]
-            print(f"profesor={usr}")
             self.facultad.set(usr[0])
             self.rol_frame_child.especialidad.set(usr[1])
+        
+        self.create_btn["text"] = "Actualizar usuario"
+        self.id_entry.config(state = "disabled")
+        self.facultad_entry.config(state = "disabled")
+        self.load_materias(None)
+        
+        # TODO: Cargar materias en form
             
     
     def modify_usr(self):

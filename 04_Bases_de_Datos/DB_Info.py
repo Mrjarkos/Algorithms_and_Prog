@@ -9,6 +9,37 @@ conn_dict = {
     "PASSWORD" : '0077'
 }
 
+materias : dict[str, tuple] = {
+    "Derecho": (
+        "Filosofía Institucional",
+        "Antropología",
+        "Inglés I",
+        "Analítica I",
+        "Introducción al Derecho",
+        "Filosofía y Teoría del Derecho",
+        "Sociología Jurídica",
+        "Historia del Derecho"
+    ),
+    "Ingenieria": (
+        "Física Mecánica y Termodinámica",
+        "Álgebra Lineal",
+        "Cálculo Diferencial",
+        "Fundamentos de Circuitos",
+        "Introducción a la Ingeniería",
+        "Filosofía Institucional",
+        "Cátedra Henri Didon"
+    ),
+    "Humanidades": (
+        "Introducción al Mundo Moderno",
+        "Pensamiento Lógico",
+        "Lengua Extranjera – Inglés I",
+        "Filosofía Institucional",
+        "Cátedra Henri Didon",
+        "Investigación I: Epistemología y Paradigmas",
+        "Fundamentos del Pensamiento Sociológico"
+    )
+}
+
 tables = {
     "estudiantes" : {
         "id" : int,
@@ -25,6 +56,11 @@ tables = {
         "identificacion" : str,
         "edad" : int,
         "especialidad" : str,
+        "facultad" : str
+    },
+    "materias" : {
+        "id" : int,
+        "nombre" : str,
         "facultad" : str
     }
 }

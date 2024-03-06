@@ -1,11 +1,14 @@
 from pickle import NONE
+from typing import Any
 import psycopg2
 from psycopg2._psycopg import (
     connection,
     cursor
     )
 
-from DB_Info import conn_dict, COMMON_ATTRB
+from DB_Info import (conn_dict,
+                     COMMON_ATTRB,
+                     materias )
 import copy
 
 class DBManager():
@@ -73,8 +76,30 @@ class DBManager():
 
         # TODO: Control de errores
         return True
+    
+    def insert_materia(self, nombre: str, facultad: str) -> bool:
+        materia = (nombre, facultad)
+        self.cur.execute("""
+            INSERT INTO materias (nombre, facultad)
+            VALUES (%s, %s);
+        """, materia)
+        self.conn.commit()
 
-    def get_estudiantes(self, properties : list[str] | None = None, filter : dict | None = None):
+        # TODO: Control de errores
+        return True
+    
+    def get_materias(self, properties : list[str] | None = None, filter : dict | None = None) -> list[tuple]:
+        prop = DBManager.generate_properties_query(properties)
+        where = DBManager.generate_filter_query(filter)
+        self.cur.execute(f"""
+            SELECT {prop} FROM materias {where}
+            ORDER BY id ASC;
+        """)
+
+        # TODO: Control de errores
+        return self.cur.fetchall()
+
+    def get_estudiantes(self, properties : list[str] | None = None, filter : dict | None = None) -> list[tuple]:
         prop = DBManager.generate_properties_query(properties)
         where = DBManager.generate_filter_query(filter)
         
@@ -84,7 +109,7 @@ class DBManager():
         """)
         return self.cur.fetchall()
 
-    def get_profesores(self, properties : list[str] | None = None, filter : dict | None = None):
+    def get_profesores(self, properties : list[str] | None = None, filter : dict | None = None) -> list[tuple]:
         prop = DBManager.generate_properties_query(properties)
         where = DBManager.generate_filter_query(filter)
             
@@ -151,6 +176,16 @@ def main():
     
     dbmanager.update_profesor("Camilo", "504284885", 42, "Ing. Electronica", "Programacion")
     print(dbmanager.get_profesores())
+
+def create_materias():
+    # facultad : materias
+    dbmanager = DBManager()
+    for facultad, materias_list in materias.items():
+        for m in materias_list:
+            dbmanager.insert_materia(m, facultad)
+    
+    print(dbmanager.get_materias())
     
 if __name__ == "__main__":
-    main()
+    #main()
+    create_materias()

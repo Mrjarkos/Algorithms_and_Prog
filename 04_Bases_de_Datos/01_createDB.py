@@ -84,3 +84,14 @@ conn.commit()
 conn.close()
 
 print("Se creó la base de datos 'universidad' con las tablas 'estudiantes', 'docentes' y materias.")
+
+from DBManager import DBManager
+from DB_Info import materias
+
+# facultad : materias
+dbmanager = DBManager()
+for facultad, materias_list in materias.items():
+    for m in materias_list:
+        dbmanager.insert_materia(m, facultad)
+
+print(dbmanager.get_materias())

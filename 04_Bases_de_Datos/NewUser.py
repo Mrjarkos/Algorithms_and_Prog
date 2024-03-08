@@ -1,11 +1,10 @@
-from re import sub
 import tkinter as tk
 from tkinter import messagebox
 from DBManager import DBManager
 
 ROLES = {
     "estudiante" : lambda frame: FrameStudent(frame),
-    "profesor" : lambda frame: FrameProfessor(frame)
+    "docente" : lambda frame: FrameProfessor(frame)
 }
 
 class FrameProfessor(tk.Frame):
@@ -137,13 +136,16 @@ class NewUser():
                 messagebox.showerror("Id existe", "Su numero de documento ya se encuentra registrado")
                 return
             
-            self.add_usr()
+            res = self.add_usr()
         else:
             if unique:
                 messagebox.showerror("Id no existe", "No se encontro id a modificar")
                 return
             
-            self.modify_usr()
+            res = self.modify_usr()
+            
+        if not res:
+            return
         self.result = True
         self.toplevel.destroy()
     
@@ -178,33 +180,45 @@ class NewUser():
     
     def load_data(self, user):       
         rol = user[-1]
-        
+        estudiante_id = None
+        docente_id = None
         self.first_name.set(user[1])
         self.id.set(user[0])
         self.edad.set(int(user[2]))
         self.rol_filter.set(rol)
         self.display_rol_frame(None)
         if rol == "estudiante":
-            usr = self.db.get_estudiantes(properties = ["facultad", "carrera", "semestre"],
+            usr = self.db.get_estudiantes(properties = ["id", "facultad", "carrera", "semestre"],
                                           filter={"identificacion": user[0]})[0]
-            self.rol_frame_child.semester.set(usr[2])
-            self.rol_frame_child.carrera.set(usr[1])
-            self.facultad.set(usr[0])
-        elif rol == "profesor":
-            usr = self.db.get_profesores(properties = ["facultad", "especialidad"],
+            self.rol_frame_child.semester.set(usr[3])
+            self.rol_frame_child.carrera.set(usr[2])
+            self.facultad.set(usr[1])
+            self.subject_lbl_list
+            estudiante_id = usr[0]
+        elif rol == "docente":
+            usr = self.db.get_profesores(properties = ["id", "facultad", "especialidad"],
                                          filter={"identificacion": user[0]})[0]
-            self.facultad.set(usr[0])
-            self.rol_frame_child.especialidad.set(usr[1])
+            self.facultad.set(usr[1])
+            self.rol_frame_child.especialidad.set(usr[2])
+            docente_id = usr[0]
         
         self.create_btn["text"] = "Actualizar usuario"
         self.id_entry.config(state = "disabled")
         self.facultad_entry.config(state = "disabled")
         self.load_materias(None)
         
-        # TODO: Cargar materias en form
+        # Get Materias
+        #
+        materias = self.db.get_materia_props_from_estudiante_profesor(["nombre"], estudiante_id, docente_id)
+        
+        for m in materias:
+            self.subject_lbl_list.insert(0, m[0])
+            self._subjects.append(m[0])
+        
             
-    
     def modify_usr(self):
+        estudiante_id = None
+        docente_id = None
         nombre = self.first_name.get()
         id = self.id.get()
         edad = self.edad.get()
@@ -213,44 +227,74 @@ class NewUser():
         selection = self.rol_filter.get()
         if selection == "estudiante":
             ## Create Student
-            subjects = self.rol_frame_child._subjects
             semestre = self.rol_frame_child.semester.get()
             carrera = self.rol_frame_child.carrera.get()
-            self.db.update_estudiante(nombre, id, edad, semestre, carrera, facultad)
-        elif selection == "profesor":
+            estudiante_id = self.db.update_estudiante(nombre, id, edad, semestre, carrera, facultad)
+        elif selection == "docente":
             especialidad = self.rol_frame_child.especialidad.get()
-            subjects = self.rol_frame_child._subjects
-            self.db.update_profesor(nombre, id, edad, facultad, especialidad) 
+            docente_id = self.db.update_profesor(nombre, id, edad, facultad, especialidad) 
+        
+        materias = self.db.get_materia_props_from_estudiante_profesor(properties=["id", "nombre"],
+                                                                    estudiante_id=estudiante_id,
+                                                                    profesor_id=docente_id)
+        
+        # Delete subjects
+        delete_subjects_id = [id for id, name in materias if name not in self._subjects]
+        for s in delete_subjects_id:
+            self.db.delete_materias_estudiantes_profesor(s, estudiante_id, docente_id)
+            
+        names = [name for id, name in materias]
+        add_subjects = [s for s in self._subjects if s not in names]
+        for m in add_subjects:    
+            # Get materia_id
+            # req: Una materia solo puede tener un solo profesor
+            # TODO:
+            materia_id = [f[0] for f in self.db.get_materias(properties=["id"], filter={"nombre": m})][0]
+            if selection == "docente":
+                # Validate there is no another professor already assigned
+                matches = self.db.get_materias_estudiantes_profesor(properties=["docente_id"], filter={"materia_id": materia_id})
+                if matches:
+                    messagebox.showerror("Materia asignada", f"Lo sentimos, la materia {m} ya está asignada")
+                    return False
+            
+            self.db.insert_materias_estudiantes_profesor(materia_id, estudiante_id, docente_id)
+        return True
     
     def add_usr(self):
+        
+        estudiante_id = None
+        docente_id = None
         # Id, nombre, identificacion, edad  ... facultad
         nombre = self.first_name.get()
         id = self.id.get()
         edad = self.edad.get()
         facultad = self.facultad.get()
-
         selection = self.rol_filter.get()
         if selection == "estudiante":
             ## Create Student
-            subjects = self.rol_frame_child._subjects
             semestre = self.rol_frame_child.semester.get()
             carrera = self.rol_frame_child.carrera.get()
-            self.db.insert_estudiante(nombre, id, edad, semestre, carrera, facultad)   
-        elif selection == "profesor":
+            estudiante_id = self.db.insert_estudiante(nombre, id, edad, semestre, carrera, facultad)
+        elif selection == "docente":
             especialidad = self.rol_frame_child.especialidad.get()
-            subjects = self.rol_frame_child._subjects
-            self.db.insert_profesor(nombre, id, edad, facultad, especialidad) 
-        # else:
-        #     job = self.rol_frame_child.job.get()
-        #     department = self.rol_frame_child.department.get()
-        #     base_salary = self.rol_frame_child.base_salary.get()
-        #     person = Administrativo(tomasino=person, 
-        #                       job=job, department=department, base_salary=base_salary)
+            docente_id = self.db.insert_profesor(nombre, id, edad, facultad, especialidad) 
+        
+        for m in self._subjects:    
+            # Get materia_id
+            materia_id = [f[0] for f in self.db.get_materias(properties=["id"], filter={"nombre": m})][0]
             
-    # "Administrativo": lambda frame: FrameAdmin(frame),
-    # "Profesor": lambda frame: FrameProfessor(frame)
+            if selection == "docente":
+                # Validate there is no another professor already assigned
+                matches = self.db.get_materias_estudiantes_profesor(properties=["docente_id"], filter={"materia_id": materia_id})
+                if matches:
+                    messagebox.showerror("Materia asignada", f"Lo sentimos, la materia {m} ya está asignada")
+                    return False    
+            # req: Una materia solo puede tener un solo profesor
+            # TODO:
+            self.db.insert_materias_estudiantes_profesor(materia_id, estudiante_id, docente_id)
+            
         messagebox.showinfo("Operacion exitosa", f"{selection} creado")
-        return 
+        return True
     
         
         

@@ -62,6 +62,12 @@ tables = {
         "id" : int,
         "nombre" : str,
         "facultad" : str
+    },
+    "materias_estudiantes" : {
+        "id" : int,
+        "materia_id": int,
+        "estudiante_id": int,
+        "docente_id": int
     }
 }
 

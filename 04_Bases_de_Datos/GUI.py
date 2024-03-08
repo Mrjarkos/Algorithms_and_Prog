@@ -3,6 +3,7 @@ from tkinter import messagebox
 
 from DBManager import DBManager
 from Table import Table
+from ListSubjects import ListSubjects
 from NewUser import NewUser
 from DB_Info import tables, COMMON_ATTRB
 
@@ -25,23 +26,24 @@ class MainWindow(tk.Frame):
     def build(self):
         ### Basic Functions
         self.add_tomasino_btn = tk.Button(self, text="Añadir Tomasino", command=self.new_user)
+        self.listar_materias = tk.Button(self, text="Listar Materia", command=self.list_subjects)
         
         ### Search
         self.search_lbl = tk.Label(self, text="Buscar Usuario ID")
         self.search_entry = tk.Entry(self, textvariable=self.search)
-        self.rol_lbl= tk.Label(self, text="Filtrar por Rol")
-        self.rol_combobox = tk.OptionMenu(self, self.rol_filter, *list(tables.keys())+[""])#, command=self.filter_by_rol)
+        
+        # TODO: Boton para listar materias
         
         ### Table
         self.header = self.Db.sort_properties(COMMON_ATTRB, exclude=["id"])
         self.table = Table(self, header=self.header+["Rol"], double_click_command=self.edit_user)
         
-        self.add_tomasino_btn.grid  (column=0, row=0, sticky="nw", pady=10, columnspan=1)
+        self.add_tomasino_btn.grid  (column=0, row=0, sticky="nw", pady=10)
+        self.listar_materias.grid   (column=1, row=0, sticky="nw", pady=10)
         self.search_lbl.grid        (column=0, row=1, sticky="nw", pady=10)
         self.search_entry.grid      (column=1, row=1, sticky="nw", pady=10)
         #self.property_combobox.grid (column=3, row=1, sticky="nw", pady=10)
-        self.rol_lbl.grid           (column=4, row=1, sticky="nw", pady=10)
-        self.rol_combobox.grid      (column=5, row=1, sticky="nw", pady=10)
+        
         self.table.grid(column=0, row=2, columnspan=5, rowspan=4)
         
         self.load_users()
@@ -64,6 +66,9 @@ class MainWindow(tk.Frame):
         self.usrs.sort()
         self.table.set_data(self.usrs)
         self.table.update()
+        
+    def list_subjects(self):
+        ListSubjects(self, self.Db).show()
 
     def new_user(self):
         # req: Permita que se puedan ingresar nuevos registros y se almacenen en BD.

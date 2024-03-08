@@ -1,5 +1,3 @@
-from pickle import NONE
-from typing import Any
 import psycopg2
 from psycopg2._psycopg import (
     connection,
@@ -29,28 +27,28 @@ class DBManager():
         return not any(any(k) for k in regs.values())
     
     def update_estudiante(self, nombre: str, identificacion: str, edad: int, semestre: int, 
-                          carrera: str, facultad: str):
+                          carrera: str, facultad: str) -> int:
         props = "nombre = %s, edad = %s, semestre = %s, carrera = %s, facultad = %s"
         estudiante = (nombre, edad, semestre, carrera, facultad, identificacion,)
         self.cur.execute(f"""
-                         UPDATE estudiantes SET {props} WHERE identificacion = %s;
+                         UPDATE estudiantes SET {props} WHERE identificacion = %s
+                         RETURNING id;
                          """, estudiante)
+        updated_id = self.cur.fetchone()[0] 
         self.conn.commit()
-        
-        # TODO: Control de errores
-        return True
+        return updated_id
     
     def update_profesor(self, nombre: str, identificacion: str, edad: int, 
-                        facultad: str, especialidad: str) -> bool:
+                        facultad: str, especialidad: str) -> int:
         props = "nombre = %s, edad = %s, facultad = %s, especialidad = %s"
         profesor = (nombre, edad, facultad, especialidad, identificacion)
         self.cur.execute(f"""
-                         UPDATE docentes SET {props} WHERE identificacion = %s;
+                         UPDATE docentes SET {props} WHERE identificacion = %s
+                         RETURNING id;
                          """, profesor)
+        updated_id = self.cur.fetchone()[0] 
         self.conn.commit()
-        
-        # TODO: Control de errores
-        return True
+        return updated_id
     
     def insert_estudiante(self, nombre: str, identificacion: str, edad: int, semestre: int, 
                           carrera: str, facultad: str) -> bool:
@@ -58,35 +56,87 @@ class DBManager():
         
         self.cur.execute("""
             INSERT INTO estudiantes (nombre, identificacion, edad, semestre, carrera, facultad)
-            VALUES (%s, %s, %s, %s, %s, %s);
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id;
         """, estudiante)
+        inserted_id = self.cur.fetchone()[0] 
         self.conn.commit()
-        
-        # TODO: Control de errores
-        return True
+        return inserted_id
     
     def insert_profesor(self, nombre: str, identificacion: str, edad: int, 
-                        facultad: str, especialidad: str) -> bool:
+                        facultad: str, especialidad: str) -> int:
         profesor = (nombre, identificacion, edad, facultad, especialidad)
         self.cur.execute("""
             INSERT INTO docentes (nombre, identificacion, edad, facultad, especialidad)
-            VALUES (%s, %s, %s, %s, %s);
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id;  
         """, profesor)
+        inserted_id = self.cur.fetchone()[0] 
         self.conn.commit()
-
-        # TODO: Control de errores
-        return True
+        return inserted_id
     
-    def insert_materia(self, nombre: str, facultad: str) -> bool:
+    def insert_materia(self, nombre: str, facultad: str) -> int:
         materia = (nombre, facultad)
         self.cur.execute("""
             INSERT INTO materias (nombre, facultad)
-            VALUES (%s, %s);
+            VALUES (%s, %s)
+            RETURNING id;
         """, materia)
+        inserted_id = self.cur.fetchone()[0] 
         self.conn.commit()
-
-        # TODO: Control de errores
-        return True
+        return inserted_id
+    
+    def insert_materias_estudiantes_profesor(self, materia_id: int|None, estudiante_id: int|None, docente_id: int|None):
+        self.cur.execute("""
+        INSERT INTO materias_estudiantes (materia_id, estudiante_id, docente_id)
+        VALUES (%s, %s, %s);
+        """, (materia_id, estudiante_id, docente_id))
+        self.conn.commit()
+        
+    def delete_materias_estudiantes_profesor(self, materia_id: int|None, estudiante_id: int|None, docente_id: int|None):
+        where = "materia_id = %s"
+        
+        if estudiante_id:
+            where += " AND estudiante_id = %s"
+            usr_id = estudiante_id
+        elif docente_id:
+            where += " AND docente_id = %s"
+            usr_id = docente_id
+        else:
+            return
+        self.cur.execute(f"""
+            DELETE FROM public.materias_estudiantes
+	        WHERE {where};
+        """, (materia_id, usr_id))
+        self.conn.commit()
+        
+    def get_materias_estudiantes_profesor(self, properties : list[str] | None = None, filter : dict | None = None):
+        prop = DBManager.generate_properties_query(properties)
+        where = DBManager.generate_filter_query(filter)
+        self.cur.execute(f"""
+            SELECT {prop} FROM public.materias_estudiantes {where}
+            ORDER BY id ASC;
+        """)
+        return self.cur.fetchall() 
+    
+    def get_materia_props_from_estudiante_profesor(self, properties, estudiante_id=None, profesor_id=None):
+        
+        prop = DBManager.generate_properties_query(["materias."+p for p in properties])
+        if estudiante_id:
+            where = "materias_estudiantes.estudiante_id = %s"
+            usr_id = estudiante_id
+        elif profesor_id:
+            where = "materias_estudiantes.docente_id = %s"
+            usr_id = profesor_id
+        else:
+            return []
+        
+        self.cur.execute(f"""
+            SELECT {prop} FROM public.materias
+            INNER JOIN materias_estudiantes on materias.id = materias_estudiantes.materia_id
+            WHERE {where}
+        """, (usr_id,))
+        return self.cur.fetchall()  
     
     def get_materias(self, properties : list[str] | None = None, filter : dict | None = None) -> list[tuple]:
         prop = DBManager.generate_properties_query(properties)
@@ -122,7 +172,26 @@ class DBManager():
     def get_proff_students(self, properties : list[str] | None = None, filter : dict | None = None):
         students = self.get_estudiantes(properties, filter)
         profes = self.get_profesores(properties, filter)
-        return {"estudiante": students , "profesor" : profes}
+        return {"estudiante": students , "docente" : profes}
+    
+    def get_proff_students_from_subject(self,  materia_id, properties : list[str] | None = None):
+        prop = DBManager.generate_properties_query(properties)
+        self.cur.execute(f"""
+            SELECT {prop} FROM public.estudiantes
+            INNER JOIN materias_estudiantes on estudiantes.id = materias_estudiantes.estudiante_id
+            WHERE materias_estudiantes.materia_id = %s
+        """, (materia_id,))
+        
+        students = self.cur.fetchall()
+        self.cur.execute(f"""
+            SELECT {prop} FROM public.docentes
+            INNER JOIN materias_estudiantes on docentes.id = materias_estudiantes.docente_id
+            WHERE materias_estudiantes.materia_id = %s
+        """, (materia_id,))
+        profes = self.cur.fetchall()
+        
+        return {"docente" : profes, "estudiante": students }
+    
     
     @staticmethod
     def generate_filter_query(filter : dict | None = None) -> str:
@@ -143,7 +212,7 @@ class DBManager():
     @staticmethod
     def sort_properties(properties : list[str], exclude : list[str] | None = None):
         prop = copy.deepcopy(properties)
-        ordered = ["identificacion", "nombre", "edad", "facultad"]
+        ordered = ["id","identificacion", "nombre", "edad", "facultad"]
         sorted_prop = []
         for el in ordered:
             if el in properties:
@@ -176,16 +245,3 @@ def main():
     
     dbmanager.update_profesor("Camilo", "504284885", 42, "Ing. Electronica", "Programacion")
     print(dbmanager.get_profesores())
-
-def create_materias():
-    # facultad : materias
-    dbmanager = DBManager()
-    for facultad, materias_list in materias.items():
-        for m in materias_list:
-            dbmanager.insert_materia(m, facultad)
-    
-    print(dbmanager.get_materias())
-    
-if __name__ == "__main__":
-    #main()
-    create_materias()

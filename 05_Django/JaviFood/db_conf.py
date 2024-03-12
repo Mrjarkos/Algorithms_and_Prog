@@ -1,0 +1,5 @@
+USER="postgres"
+PASSWORD = "0077"
+HOST = "localhost"
+PORT = "5432"
+DATABASE = "blog"

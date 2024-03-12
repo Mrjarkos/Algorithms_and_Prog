@@ -4,7 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+asgiref = "*"
+beautifulsoup4 = "*"
 django = "*"
+django-bootstrap-v5 = "*"
+psycopg2 = "*"
+soupsieve = "*"
+sqlparse = "*"
+tzdata = "*"
 
 [dev-packages]
 

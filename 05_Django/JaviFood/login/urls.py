@@ -16,10 +16,9 @@ Including another URLconf
 """
 # blog/urls.py
 from django.urls import path, include
-from .views import HomePageView, AboutPageView, BlogPageView
+from .views import LoginPageView
 
+app_name = "login"
 urlpatterns = [
-    path("", HomePageView.as_view(), name = "home"),
-    path("about/", AboutPageView.as_view(), name = "about"),
-    path("blog/", BlogPageView.as_view(), name = "blog")
+    path("", include("django.contrib.auth.urls")),
 ]

@@ -50,13 +50,24 @@
                         <a class="nav-link" href="{% url 'about' %}">About</a>
                      </li>
                   </ul>
+                  {% if user.is_authenticated %}
                   <form class="form-inline my-2 my-lg-0">
                      <div class="login_bt">
                         <ul>
-                           <li><a href="{% url 'login' %}"><span class="user_icon"><i class="fa fa-user" aria-hidden="true"></i></span>Login</a></li>
+                           <li>
+                              <a href="{% url 'admin:logout' %}" id="logoutid"><span class="user_icon"><i class="fa fa-user" aria-hidden="true"></i></span>  {{ request.user.username }}! </a></li>
                         </ul>
                      </div>
                   </form>
+                  {% else %}
+                  <form class="form-inline my-2 my-lg-0">
+                     <div class="login_bt">
+                        <ul>
+                           <li><a href="{% url 'login:login' %}"><span class="user_icon"><i class="fa fa-user" aria-hidden="true"></i></span>Login</a></li>
+                        </ul>
+                     </div>
+                  </form>
+                  {% endif %}
                </div>
             </nav>
          </div>

@@ -16,9 +16,14 @@ Including another URLconf
 """
 # blog/urls.py
 from django.urls import path, include
+from django.shortcuts import redirect
 from django.contrib import admin
+from login.views import logout_view
 
 urlpatterns = [
+    path("login/", include("login.urls")),
+    path('logout/', logout_view, name='logout'),  # Override logout URL
+    path('admin/logout/', lambda request: redirect('/logout/', permanent=False)),
     path("admin/", admin.site.urls),
     path("", include("blog.urls")),
 ]

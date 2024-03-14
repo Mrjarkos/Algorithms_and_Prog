@@ -39,36 +39,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-## Roles
-
-cur.execute("CREATE TYPE rol_enum AS ENUM ('admin', 'user');")
-
-# Crea la tabla "users"
-cur.execute("""
-    CREATE TABLE users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255),
-        email VARCHAR(255),
-        password VARCHAR(255),
-        rol rol_enum
-    );
-""")
-
-# Crea la tabla "Blogs"
-cur.execute("""
-    CREATE TABLE blogs (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(100),
-        summary VARCHAR(255),
-        post TEXT,
-        slug VARCHAR(255),
-        cover VARCHAR(255),
-        author INTEGER REFERENCES users(id),    
-        added TIMESTAMP DEFAULT current_timestamp,
-        edited TIMESTAMP DEFAULT current_timestamp
-    );
-""")
-
 # Confirma los cambios y cierra la conexión
 conn.commit()
 conn.close()

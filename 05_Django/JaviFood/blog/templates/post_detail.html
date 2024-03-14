@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- banner section start --> 
+<div class="header">
+    <div class="banner_section layout_padding">
+        <div class="container">
+            <h2> {{ blog.title }} </h2>
+            <h3> Autor: {{ blog.author }} </h3>
+            <img src="{{ blog.cover }}" alt=""/>
+            <p> {{ blog.content }} </p>
+            <h4> Publicado: {{ blog.added }} </h4>
+            <h4> Última modificación: {{ blog.edited }} </h4>
+        </div>
+    </div>
+</div>
+<!-- blog section end -->
+{% endblock content %}

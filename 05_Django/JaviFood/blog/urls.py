@@ -16,10 +16,10 @@ Including another URLconf
 """
 # blog/urls.py
 from django.urls import path, include
-from .views import HomePageView, AboutPageView, BlogPageView
+from .views import AboutPageView, BlogPageView, BlogDetailView
 
 urlpatterns = [
-    path("", HomePageView.as_view(), name = "home"),
+    path("", BlogPageView.as_view(), name = "home"),
+    path("blog/<slug>/", BlogDetailView.as_view(), name = "post_detail"),
     path("about/", AboutPageView.as_view(), name = "about"),
-    path("blog/", BlogPageView.as_view(), name = "blog")
 ]

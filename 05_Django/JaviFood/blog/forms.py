@@ -1,13 +1,9 @@
 from django.forms import ModelForm
+from django.contrib.auth.models import User
 
-from .models import Blog, User
+from .models import Blog
 
 class BlogForm(ModelForm):
     class Meta:
         model = Blog
-        fields = ['title', 'summary', 'post', 'slug', 'cover', 'author']
-        
-class UserForm(ModelForm):
-    class Meta:
-        model = User
-        fields = ['name', 'email', 'password', 'rol']
+        fields = ['title', 'summary', 'content', 'slug', 'cover', 'author']

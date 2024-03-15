@@ -19,11 +19,15 @@ from django.urls import path, include
 from .views import (AboutPageView, 
                     BlogPageView, 
                     BlogDetailView, 
-                    blog_new)
+                    blog_new,
+                    blog_edit,
+                    blog_delete)
 
 urlpatterns = [
     path("", BlogPageView.as_view(), name = "home"),
     path("blog/<slug>/", BlogDetailView.as_view(), name = "post_detail"),
     path("new", blog_new, name = "blog_new"),
+    path('edit/<slug>/', blog_edit, name='blog_edit'),
     path("about/", AboutPageView.as_view(), name = "about"),
+    path('delete/<slug>/', blog_delete, name='blog_delete'),
 ]

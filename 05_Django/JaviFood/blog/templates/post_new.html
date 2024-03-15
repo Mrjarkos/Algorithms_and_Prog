@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- banner section start --> 
+
+<div class="banner_section layout_padding">
+    <div class="container">
+        <div class="header">
+            <div id="content-start" class="content" tabindex="-1">
+                <div id="content" class "colM">
+                    <h1> Add blog </h1>
+                    <div id="content-main">
+                        <form action="" id="blog_form" method="post">
+                            {% csrf_token %}
+                            <div>
+                                <fieldset class="module aligned">
+                                    {% for field in form %}
+                                    <div>
+                                        <div class="form-row field-{{field.name}}">
+                                            <div class="fieldWrapper flex-container">
+                                            {{ field.label_tag }} {{ field }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    <input type="submit" value="Save"/>
+                                </fieldset>
+                            </div>
+                        </form>
+                        <br class="clear">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- blog section end -->
+{% endblock content %}

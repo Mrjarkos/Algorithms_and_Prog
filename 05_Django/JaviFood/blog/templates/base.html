@@ -1,6 +1,7 @@
 <!-- templates/base.html -->
 {% load static %}
 {% load bootstrap5 %}
+<link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">
 <!DOCTYPE html>
 <html>
    <head>
@@ -45,7 +46,7 @@
                      </li>
                      {% if user.is_authenticated %}
                      <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Add Post</a>
+                        <a class="nav-link" href="{% url 'blog_new' %}">Add Post</a>
                      </li>
                      {% endif %}
                      <li class="nav-item">

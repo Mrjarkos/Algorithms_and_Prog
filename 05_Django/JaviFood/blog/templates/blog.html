@@ -13,14 +13,16 @@
       <div class="blog_section_2">    
          {% for post in object_list %}
          <div class="row">
-            <div class="col-md-6">
-               <div class="blog_box">
-                  <div class="blog_img"><img src={{ post.cover }}></div>
-                  <h4 class="prep_text">{{ post.author }}</h4>
-                  <h4 class="date_text">{{ post.added}}</h4>
-                  <p class="lorem_text">{{ post.summary }}</p>
+            <div class="blog_selection_2">
+               <div class="col-md-6">
+                  <div class="blog_box">
+                     <div class="blog_img"><img src={{ post.cover }}></div>
+                     <h4 class="prep_text">{{ post.author }}</h4>
+                     <h4 class="date_text">{{ post.added}}</h4>
+                     <p class="lorem_text">{{ post.summary }}</p>
+                  </div>
+                  <div class="read_bt"><a href="{% url 'post_detail' post.slug %}">Read More</a></div>
                </div>
-               <div class="read_bt"><a href="{% url 'post_detail' post.slug %}">Read More</a></div>
             </div>
          <div>
          {% endfor %}

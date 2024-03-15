@@ -1,0 +1,97 @@
+<!--- templates/home.html -->
+{% load static %}
+{% load bootstrap5 %}
+<!DOCTYPE html>
+<html>
+    <head>
+    <!-- basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <!-- site metas -->
+    <title>JaviFood Blog Login</title>
+    <meta name="keywords" content="Food, Health, Blog">
+    <meta name="description" content="Blog about healthy food">
+    <meta name="author" content="Javier Cardenas">
+    <!-- bootstrap css -->
+    {% bootstrap_css %}
+    <!--Fontawesome CDN-->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <!-- style css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    </head>
+    <body>
+        <div class="container">
+            {% comment %} <div class="d-flex justify-content-center h-100">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Crear cuenta</h3>
+                    </div>
+                    <form method="post">
+                        <div class="card-body">
+                            <!-- Cross-site request forgery - Security Token -->
+                            {% csrf_token %}
+                            <p>First, enter a username and password. Then, you’ll be able to edit more user options.</p>
+                            <div>
+                                <fieldset class="module aligned wide">
+                                    <div class="input-group form-group form-row field-username">
+                                        <div class="input-group-prepend">
+                                            <div class="flex-container">
+                                                <label class="required" for="id_username">Username:</label>
+                                                <input type="text" name="username" class="vTextField" maxlength="150" autocapitalize="none" autocomplete="username" autofocus="" required="" id="id_username">
+                                            </div>
+                                            <div class="help" id="id_username_helptext">
+                                                <div>Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="input-group form-group form-row field-password1">
+                                        <div class="input-group-prepend">
+                                            <div class="flex-container">
+                                                <label class="required" for="id_password1">Password:</label>
+                                                <input type="password" name="password1" autocomplete="new-password" required="" id="id_password1" aria-autocomplete="list">
+                                            </div>
+                                            <div class="help" id="id_password1_helptext">
+                                                <div><ul><li>Your password can’t be too similar to your other personal information.</li><li>Your password must contain at least 8 characters.</li><li>Your password can’t be a commonly used password.</li><li>Your password can’t be entirely numeric.</li></ul></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="input-group form-group form-row field-password2">
+                                        <div class="input-group-prepend">
+                                            <div class="flex-container">
+                                                <label class="required" for="id_password2">Password confirmation:</label>
+                                                <input type="password" name="password2" autocomplete="new-password" required="" id="id_password2" aria-autocomplete="list">
+                                            </div>
+                                            <div class="help" id="id_password1_helptext">
+                                                <div><ul><li>Enter the same password as before, for verification.</li></ul></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="card-footer submit-row">
+                            <div class="d-flex justify-content-center links">
+                                <button type="submit">Sign Up</button>
+                            </div>
+                            <script id="django-admin-form-add-constants" src="/static/admin/js/change_form.js" data-model-name="user" async="">
+                            </script>
+                            <script id="django-admin-prepopulated-fields-constants" src="/static/admin/js/prepopulate_init.js" data-prepopulated-fields="[]">
+                            </script>
+                        </div>
+                    </form>
+                </div>
+                <br class="clear">
+            </div> {% endcomment %}
+            <h2>Sign up</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </body>
+</html>
